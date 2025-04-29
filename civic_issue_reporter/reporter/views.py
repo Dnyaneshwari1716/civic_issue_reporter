@@ -1,4 +1,4 @@
-'''from django.shortcuts import render
+from django.shortcuts import render
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse
@@ -310,200 +310,200 @@ def user_dashboard(request):
 def authority_dashboard(request):
     complaints = Complaint.objects.all()
     return render(request, 'reporter/authority_dashboard.html', {'complaints': complaints})
-'''
 
-from django.shortcuts import render, redirect
-from django.conf import settings
-from django.core.files.storage import FileSystemStorage
-from django.http import HttpResponse
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.utils import timezone
-from .models import Complaint, Department
-from .email_tools import send_complaint_email
-import os
-import re
-import requests
-import base64
-from datetime import datetime
-from io import BytesIO
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter
-# Add these functions to views.py (before the upload_issue view)
 
-def call_gemini_vision_api(image_path, location):
-    """Call Gemini API to analyze image and generate complaint text"""
-    try:
-        endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent"
-        with open(image_path, "rb") as img_file:
-            image_data = base64.b64encode(img_file.read()).decode('utf-8')
+# from django.shortcuts import render, redirect
+# from django.conf import settings
+# from django.core.files.storage import FileSystemStorage
+# from django.http import HttpResponse
+# from django.contrib import messages
+# from django.contrib.auth.decorators import login_required
+# from django.utils import timezone
+# from .models import Complaint, Department
+# from .email_tools import send_complaint_email
+# import os
+# import re
+# import requests
+# import base64
+# from datetime import datetime
+# from io import BytesIO
+# from reportlab.pdfgen import canvas
+# from reportlab.lib.pagesizes import letter
+# # Add these functions to views.py (before the upload_issue view)
 
-        payload = {
-            "contents": [{
-                "parts": [
-                    {
-                        "text": f"""
-Generate a formal civic complaint based on this image showing an issue at {location}.
-Include:
-1. Clear description of the issue
-2. Specific location details
-3. Request for resolution
-4. Professional tone
-"""
-                    },
-                    {"inline_data": {"mime_type": "image/jpeg", "data": image_data}}
-                ]
-            }]
-        }
+# def call_gemini_vision_api(image_path, location):
+#     """Call Gemini API to analyze image and generate complaint text"""
+#     try:
+#         endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent"
+#         with open(image_path, "rb") as img_file:
+#             image_data = base64.b64encode(img_file.read()).decode('utf-8')
 
-        headers = {
-            "Content-Type": "application/json",
-            "x-goog-api-key": settings.GEMINI_API_KEY
-        }
+#         payload = {
+#             "contents": [{
+#                 "parts": [
+#                     {
+#                         "text": f"""
+# Generate a formal civic complaint based on this image showing an issue at {location}.
+# Include:
+# 1. Clear description of the issue
+# 2. Specific location details
+# 3. Request for resolution
+# 4. Professional tone
+# """
+#                     },
+#                     {"inline_data": {"mime_type": "image/jpeg", "data": image_data}}
+#                 ]
+#             }]
+#         }
 
-        response = requests.post(endpoint, json=payload, headers=headers)
-        response.raise_for_status()  # Raises exception for 4XX/5XX errors
+#         headers = {
+#             "Content-Type": "application/json",
+#             "x-goog-api-key": settings.GEMINI_API_KEY
+#         }
+
+#         response = requests.post(endpoint, json=payload, headers=headers)
+#         response.raise_for_status()  # Raises exception for 4XX/5XX errors
         
-        return response.json()['candidates'][0]['content']['parts'][0]['text']
+#         return response.json()['candidates'][0]['content']['parts'][0]['text']
     
-    except Exception as e:
-        print(f"Gemini API Error: {str(e)}")
-        return f"Standard complaint about issue at {location}. Please add details."
+#     except Exception as e:
+#         print(f"Gemini API Error: {str(e)}")
+#         return f"Standard complaint about issue at {location}. Please add details."
 
-def clean_complaint(raw_text, location):
-    """Clean and format the generated complaint text"""
-    if not raw_text:
-        return f"Formal complaint regarding an issue at {location}"
+# def clean_complaint(raw_text, location):
+#     """Clean and format the generated complaint text"""
+#     if not raw_text:
+#         return f"Formal complaint regarding an issue at {location}"
     
-    # Remove duplicate headers/footers
-    clean_text = re.sub(r'(Dear|To|Subject|Sincerely).*?\n', '', raw_text, flags=re.IGNORECASE)
-    clean_text = re.sub(r'\n{3,}', '\n\n', clean_text)  # Remove extra newlines
-    clean_text = clean_text.replace("[Location]", location)
+#     # Remove duplicate headers/footers
+#     clean_text = re.sub(r'(Dear|To|Subject|Sincerely).*?\n', '', raw_text, flags=re.IGNORECASE)
+#     clean_text = re.sub(r'\n{3,}', '\n\n', clean_text)  # Remove extra newlines
+#     clean_text = clean_text.replace("[Location]", location)
     
-    return clean_text.strip()
+#     return clean_text.strip()
 
-def extract_issue_type_from_text(text):
-    """Determine issue type from complaint text"""
-    text_lower = text.lower()
-    if any(kw in text_lower for kw in ['pothole', 'road', 'street']):
-        return 'Road Damage'
-    elif any(kw in text_lower for kw in ['garbage', 'waste', 'trash']):
-        return 'Sanitation'
-    elif any(kw in text_lower for kw in ['water', 'leak', 'pipe']):
-        return 'Water Supply'
-    elif any(kw in text_lower for kw in ['light', 'lamp', 'electric']):
-        return 'Electricity'
-    return 'General Complaint'
+# def extract_issue_type_from_text(text):
+#     """Determine issue type from complaint text"""
+#     text_lower = text.lower()
+#     if any(kw in text_lower for kw in ['pothole', 'road', 'street']):
+#         return 'Road Damage'
+#     elif any(kw in text_lower for kw in ['garbage', 'waste', 'trash']):
+#         return 'Sanitation'
+#     elif any(kw in text_lower for kw in ['water', 'leak', 'pipe']):
+#         return 'Water Supply'
+#     elif any(kw in text_lower for kw in ['light', 'lamp', 'electric']):
+#         return 'Electricity'
+#     return 'General Complaint'
 
-def upload_issue(request):
-    if request.method == 'POST':
-        # Handle image capture/upload
-        if request.POST.get('mode') == 'capture':
-            captured_image = request.POST.get('captured_image')
-            if captured_image:
-                format, imgstr = captured_image.split(';base64,')
-                img_data = base64.b64decode(imgstr)
-                img_name = f"captured_{datetime.now().strftime('%Y%m%d%H%M%S')}.jpeg"
-                img_path = os.path.join(settings.MEDIA_ROOT, 'uploads', img_name)
-                os.makedirs(os.path.dirname(img_path), exist_ok=True)
-                with open(img_path, 'wb') as f:
-                    f.write(img_data)
-                image_url = settings.MEDIA_URL + 'uploads/' + img_name
-        else:
-            image = request.FILES['image']
-            fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'uploads'))
-            filename = fs.save(image.name, image)
-            image_url = settings.MEDIA_URL + 'uploads/' + filename
-            img_path = os.path.join(settings.MEDIA_ROOT, 'uploads', filename)
+# def upload_issue(request):
+#     if request.method == 'POST':
+#         # Handle image capture/upload
+#         if request.POST.get('mode') == 'capture':
+#             captured_image = request.POST.get('captured_image')
+#             if captured_image:
+#                 format, imgstr = captured_image.split(';base64,')
+#                 img_data = base64.b64decode(imgstr)
+#                 img_name = f"captured_{datetime.now().strftime('%Y%m%d%H%M%S')}.jpeg"
+#                 img_path = os.path.join(settings.MEDIA_ROOT, 'uploads', img_name)
+#                 os.makedirs(os.path.dirname(img_path), exist_ok=True)
+#                 with open(img_path, 'wb') as f:
+#                     f.write(img_data)
+#                 image_url = settings.MEDIA_URL + 'uploads/' + img_name
+#         else:
+#             image = request.FILES['image']
+#             fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'uploads'))
+#             filename = fs.save(image.name, image)
+#             image_url = settings.MEDIA_URL + 'uploads/' + filename
+#             img_path = os.path.join(settings.MEDIA_ROOT, 'uploads', filename)
 
-        location = request.POST.get('location', '')
+#         location = request.POST.get('location', '')
         
-        # Generate complaint text (your existing Gemini integration)
-        raw_complaint_text = call_gemini_vision_api(img_path, location)
-        clean_text = clean_complaint(raw_complaint_text, location)
-        issue_type = extract_issue_type_from_text(clean_text)
+#         # Generate complaint text (your existing Gemini integration)
+#         raw_complaint_text = call_gemini_vision_api(img_path, location)
+#         clean_text = clean_complaint(raw_complaint_text, location)
+#         issue_type = extract_issue_type_from_text(clean_text)
         
-        # Auto-assign department
-        department = Department.objects.filter(
-            issue_types__icontains=issue_type
-        ).first()
+#         # Auto-assign department
+#         department = Department.objects.filter(
+#             issue_types__icontains=issue_type
+#         ).first()
         
-        # Save complaint
-        complaint = Complaint.objects.create(
-            user=request.user if request.user.is_authenticated else None,
-            image=image_url,
-            issue_type=issue_type,
-            description=clean_text,
-            location=location,
-            department=department,
-            status='Pending'
-        )
+#         # Save complaint
+#         complaint = Complaint.objects.create(
+#             user=request.user if request.user.is_authenticated else None,
+#             image=image_url,
+#             issue_type=issue_type,
+#             description=clean_text,
+#             location=location,
+#             department=department,
+#             status='Pending'
+#         )
         
-        # Send email
-        if department and department.email:
-            send_complaint_email(complaint)
+#         # Send email
+#         if department and department.email:
+#             send_complaint_email(complaint)
         
-        return render(request, 'reporter/result.html', {
-            'complaint': complaint,
-            'image_url': image_url
-        })
+#         return render(request, 'reporter/result.html', {
+#             'complaint': complaint,
+#             'image_url': image_url
+#         })
     
-    return render(request, 'reporter/upload.html')
+#     return render(request, 'reporter/upload.html')
 
-@login_required
-def update_status(request, complaint_id):
-    if request.method == 'POST':
-        complaint = Complaint.objects.get(id=complaint_id)
-        complaint.status = request.POST.get('status')
-        complaint.save()
-        messages.success(request, "Status updated successfully!")
-    return redirect('authority_dashboard')
+# @login_required
+# def update_status(request, complaint_id):
+#     if request.method == 'POST':
+#         complaint = Complaint.objects.get(id=complaint_id)
+#         complaint.status = request.POST.get('status')
+#         complaint.save()
+#         messages.success(request, "Status updated successfully!")
+#     return redirect('authority_dashboard')
 
-# reporter/views.py
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
-from django.conf import settings
-from io import BytesIO
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter
-from .models import Complaint
-import os
-from django.contrib import messages
+# # reporter/views.py
+# from django.shortcuts import render, redirect
+# from django.http import HttpResponse
+# from django.conf import settings
+# from io import BytesIO
+# from reportlab.pdfgen import canvas
+# from reportlab.lib.pagesizes import letter
+# from .models import Complaint
+# import os
+# from django.contrib import messages
 
-def download_complaint_pdf(request):
-    """Generate PDF from complaint data"""
-    try:
-        complaint_id = request.GET.get('id')
-        if not complaint_id:
-            return HttpResponse("Missing complaint ID", status=400)
+# def download_complaint_pdf(request):
+#     """Generate PDF from complaint data"""
+#     try:
+#         complaint_id = request.GET.get('id')
+#         if not complaint_id:
+#             return HttpResponse("Missing complaint ID", status=400)
             
-        complaint = Complaint.objects.get(id=complaint_id)
+#         complaint = Complaint.objects.get(id=complaint_id)
         
-        # Create PDF
-        buffer = BytesIO()
-        p = canvas.Canvas(buffer, pagesize=letter)
+#         # Create PDF
+#         buffer = BytesIO()
+#         p = canvas.Canvas(buffer, pagesize=letter)
         
-        # Add content
-        p.drawString(100, 750, f"Complaint ID: {complaint.id}")
-        p.drawString(100, 730, f"Issue Type: {complaint.issue_type}")
-        p.drawString(100, 710, f"Location: {complaint.location}")
+#         # Add content
+#         p.drawString(100, 750, f"Complaint ID: {complaint.id}")
+#         p.drawString(100, 730, f"Issue Type: {complaint.issue_type}")
+#         p.drawString(100, 710, f"Location: {complaint.location}")
         
-        # Add complaint text with proper wrapping
-        text = p.beginText(100, 690)
-        text.setFont("Helvetica", 12)
+#         # Add complaint text with proper wrapping
+#         text = p.beginText(100, 690)
+#         text.setFont("Helvetica", 12)
         
-        for line in complaint.description.split('\n'):
-            text.textLine(line)
+#         for line in complaint.description.split('\n'):
+#             text.textLine(line)
             
-        p.drawText(text)
-        p.showPage()
-        p.save()
+#         p.drawText(text)
+#         p.showPage()
+#         p.save()
         
-        # Get PDF value and return response
-        buffer.seek(0)
-        return HttpResponse(buffer, content_type='application/pdf')
+#         # Get PDF value and return response
+#         buffer.seek(0)
+#         return HttpResponse(buffer, content_type='application/pdf')
         
-    except Complaint.DoesNotExist:
-        return HttpResponse("Complaint not found", status=404)
-    except Exception as e:
-        return HttpResponse(f"Error generating PDF: {str(e)}", status=500)
+#     except Complaint.DoesNotExist:
+#         return HttpResponse("Complaint not found", status=404)
+#     except Exception as e:
+#         return HttpResponse(f"Error generating PDF: {str(e)}", status=500)
