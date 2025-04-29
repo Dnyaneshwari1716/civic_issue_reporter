@@ -1,0 +1,96 @@
+<!-- reporter/templates/reporter/result.html -->
+
+<!-- <!DOCTYPE html>
+<html>
+<head>
+    <title>Issue Detected</title>
+</head>
+<body>
+    <h1>Detected Civic Issue</h1>
+    <img src="{{ image_url }}" alt="Uploaded Image" style="max-width:400px;"><br><br>
+    <h3>Location:</h3>
+    <p>{{ location }}</p>
+    <h3>Description:</h3>
+    <p>{{ description }}</p>
+
+    <br><br>
+    <a href="/">Upload Another</a>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Civic Issue Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        .complaint-container {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+        }
+        .complaint-text {
+            white-space: pre-wrap; /* To preserve newlines in the complaint */
+            margin-top: 10px;
+        }
+        img {
+            max-width: 25%;
+            height: auto;
+        }
+        .location {
+            font-style: italic;
+        }
+        .btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .btn-danger {
+            background-color: #f44336;
+        }
+        .btn-danger:hover {
+            background-color: #e53935;
+        }
+    </style>
+</head>
+<body>
+    <h3>Civic Issue Report</h3>
+    
+    <!-- Image preview -->
+    <h3>Issue Image</h3>
+    <img src="{{ image_url }}" alt="Issue Image" style="width: 100%;"><br><br>
+    <!-- Description of the issue -->
+    <!-- Location -->
+    <h3>Location of the Issue</h3>
+    <p class="location">{{ location }}</p><br>
+    <!-- Generated Complaint -->
+    <h4>Generated Complaint</h4>
+    <div class="complaint-container">
+        <p class="complaint-text">{{ complaint_text }}</p>
+    </div>
+
+    <!-- Buttons -->
+    <a href="{% url 'upload_issue' %}" class="btn">Upload Another Issue</a>
+    <a href="{% url 'download_complaint_pdf' %}" class="btn">Download Complaint as PDF</a>
+    
+    <!-- Email Button -->
+    <form action="{% url 'send_email_to_authority' %}" method="post" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Send Email to Authority</button>
+    </form>
+</body>
+</html>

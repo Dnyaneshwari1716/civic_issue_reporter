@@ -1,0 +1,64 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Authority Dashboard</title>
+    <style>
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+        tr:hover { background-color: #f5f5f5; }
+        .status-pending { color: orange; }
+        .status-in-progress { color: blue; }
+        .status-resolved { color: green; }
+    </style>
+</head>
+<body>
+    <h2>Welcome, {{ request.user.username }} (Authority)</h2>
+    <a href="{% url 'logout' %}">Logout</a>
+
+    <h3>Complaints Management</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Issue</th>
+                <th>Location</th>
+                <th>Status</th>
+                <th>Reported By</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for complaint in complaints %}
+            <tr>
+                <td>{{ complaint.id }}</td>
+                <td>{{ complaint.issue_type }}</td>
+                <td>{{ complaint.location }}</td>
+                <td class="status-{{ complaint.status|lower|slugify }}">
+                    <form method="post" action="{% url 'update_status' complaint.id %}">
+                        {% csrf_token %}
+                        <select name="status" onchange="this.form.submit()">
+                            <option value="Pending" {% if complaint.status == 'Pending' %}selected{% endif %}>Pending</option>
+                            <option value="In Progress" {% if complaint.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                            <option value="Resolved" {% if complaint.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                        </select>
+                    </form>
+                </td>
+                <td>{{ complaint.user.username|default:"Anonymous" }}</td>
+                <td>{{ complaint.created_at|date:"Y-m-d" }}</td>
+                <td>
+                    <a href="{{ complaint.image.url }}" target="_blank">View Image</a> |
+                    <a href="{% url 'download_complaint_pdf' %}?id={{ complaint.id }}">PDF</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">No complaints found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

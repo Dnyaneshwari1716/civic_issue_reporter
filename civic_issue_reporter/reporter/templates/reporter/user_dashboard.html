@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Dashboard</title>
+</head>
+<body>
+<h2>Welcome, {{ request.user.username }}!</h2>
+<a href="{% url 'logout' %}">Logout</a>
+
+<h3>Your Complaints</h3>
+<ul>
+    {% for complaint in complaints %}
+        <li>{{ complaint.issue_type }} - {{ complaint.location }} ({{ complaint.timestamp }})</li>
+    {% empty %}
+        <li>No complaints filed yet.</li>
+    {% endfor %}
+</ul>
+</body>
+</html>

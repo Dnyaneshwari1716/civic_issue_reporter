@@ -1,0 +1,136 @@
+<!-- <!DOCTYPE html>
+<html>
+<head>
+    <title>Civic Issue Reporter</title>
+</head>
+<body>
+    <h1>Upload Civic Issue</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="image" accept="image/*" required><br><br>
+        <input type="text" name="location" placeholder="Enter location (optional)"><br><br>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
+ -->
+
+<!-- reporter/templates/reporter/upload.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Report Civic Issue</title>
+    <style>
+        video, canvas {
+            width: 400px;
+            height: auto;
+            border: 1px solid black;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Report a Civic Issue</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <!-- Radio buttons: Capture or Upload -->
+        <label><input type="radio" name="mode" value="capture" onclick="chooseMode('capture')"> Capture Image</label>
+        <label><input type="radio" name="mode" value="upload" onclick="chooseMode('upload')"> Upload Image</label>
+
+        <br><br>
+
+        <!-- Webcam Preview and Capture -->
+        <div id="captureDiv" style="display:none;">
+            <video id="video" autoplay></video><br>
+            <button type="button" onclick="capturePhoto()">Capture Photo</button>
+            <canvas id="canvas" style="display:none;"></canvas>
+            <input type="hidden" name="captured_image" id="captured_image">
+        </div>
+
+        <!-- Upload Image -->
+        <div id="uploadDiv" style="display:none;">
+            <input type="file" name="image" accept="image/*">
+        </div>
+
+        <br>
+
+        <!-- Location -->
+        <div>
+            <label for="location">Location:</label><br>
+            <input type="text" name="location" id="location" required>
+        </div>
+
+        <br>
+        <button type="submit">Submit Report</button>
+    </form>
+
+    <script>
+        let video = document.getElementById('video');
+        let canvas = document.getElementById('canvas');
+        let capturedImageInput = document.getElementById('captured_image');
+        let locationInput = document.getElementById('location');
+
+        function chooseMode(mode) {
+            if (mode === 'capture') {
+                document.getElementById('captureDiv').style.display = 'block';
+                document.getElementById('uploadDiv').style.display = 'none';
+
+                // Start Webcam
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(stream => {
+                        video.srcObject = stream;
+                    })
+                    .catch(err => {
+                        alert('Could not access webcam');
+                    });
+
+                // Auto Fetch Location
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const lat = position.coords.latitude;
+                            const lon = position.coords.longitude;
+                            // You can show it as lat, lon or call a reverse geocoding API to get address
+                            locationInput.value = `Latitude: ${lat}, Longitude: ${lon}`;
+;
+                        },
+                        (error) => {
+                            alert('Could not fetch location automatically.');
+                        }
+                    );
+                } else {
+                    alert('Geolocation is not supported by this browser.');
+                }
+
+            } else if (mode === 'upload') {
+                document.getElementById('captureDiv').style.display = 'none';
+                document.getElementById('uploadDiv').style.display = 'block';
+
+                // Stop Webcam if running
+                if (video.srcObject) {
+                    video.srcObject.getTracks().forEach(track => track.stop());
+                }
+                // Clear location field
+                locationInput.value = '';
+            }
+        }
+
+        function capturePhoto() {
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Convert canvas to base64 image
+            let imageData = canvas.toDataURL('image/jpeg');
+            capturedImageInput.value = imageData;
+
+            alert('Image captured! You can now submit.');
+        }
+    </script>
+
+</body>
+</html>
