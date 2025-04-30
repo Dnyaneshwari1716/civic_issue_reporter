@@ -121,6 +121,13 @@ EMAIL_HOST_USER = "jadhawardnyaneshwari@gmail.com"
 EMAIL_APP_PASSWORD = "nkfy hmdm lknm nyqn"
 EMAIL_SENDER_NAME = "DjangoEmail"
 
+STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 """
 Django settings for civic_issue_reporter project.
