@@ -260,56 +260,56 @@ Sincerely,
     return HttpResponse("Invalid request method", status=405)
 
 
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
-from django.contrib import messages
-from .forms import UserRegisterForm
-from .models import UserProfile, Complaint
-from django.contrib.auth.decorators import login_required
+# from django.shortcuts import render, redirect
+# from django.contrib.auth import authenticate, login, logout
+# from django.contrib import messages
+# from .forms import UserRegisterForm
+# from .models import UserProfile, Complaint
+# from django.contrib.auth.decorators import login_required
 
-def register_view(request):
-    if request.method == 'POST':
-        form = UserRegisterForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            user_type = form.cleaned_data.get('user_type')
-            UserProfile.objects.create(user=user, user_type=user_type)
-            messages.success(request, "Account created successfully!")
-            return redirect('login')
-    else:
-        form = UserRegisterForm()
-    return render(request, 'reporter/register.html', {'form': form})
+# def register_view(request):
+#     if request.method == 'POST':
+#         form = UserRegisterForm(request.POST)
+#         if form.is_valid():
+#             user = form.save()
+#             user_type = form.cleaned_data.get('user_type')
+#             UserProfile.objects.create(user=user, user_type=user_type)
+#             messages.success(request, "Account created successfully!")
+#             return redirect('login')
+#     else:
+#         form = UserRegisterForm()
+#     return render(request, 'reporter/register.html', {'form': form})
 
-def login_view(request):
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            profile = UserProfile.objects.get(user=user)
-            if profile.user_type == 'authority':
-                return redirect('authority_dashboard')
-            else:
-                return redirect('user_dashboard')
-        else:
-            messages.error(request, "Invalid username or password.")
-    return render(request, 'reporter/login.html')
+# def login_view(request):
+#     if request.method == 'POST':
+#         username = request.POST['username']
+#         password = request.POST['password']
+#         user = authenticate(request, username=username, password=password)
+#         if user is not None:
+#             login(request, user)
+#             profile = UserProfile.objects.get(user=user)
+#             if profile.user_type == 'authority':
+#                 return redirect('authority_dashboard')
+#             else:
+#                 return redirect('user_dashboard')
+#         else:
+#             messages.error(request, "Invalid username or password.")
+#     return render(request, 'reporter/login.html')
 
-@login_required
-def logout_view(request):
-    logout(request)
-    return redirect('login')
+# @login_required
+# def logout_view(request):
+#     logout(request)
+#     return redirect('login')
 
-@login_required
-def user_dashboard(request):
-    complaints = Complaint.objects.filter(user=request.user)
-    return render(request, 'reporter/user_dashboard.html', {'complaints': complaints})
+# @login_required
+# def user_dashboard(request):
+#     complaints = Complaint.objects.filter(user=request.user)
+#     return render(request, 'reporter/user_dashboard.html', {'complaints': complaints})
 
-@login_required
-def authority_dashboard(request):
-    complaints = Complaint.objects.all()
-    return render(request, 'reporter/authority_dashboard.html', {'complaints': complaints})
+# @login_required
+# def authority_dashboard(request):
+#     complaints = Complaint.objects.all()
+#     return render(request, 'reporter/authority_dashboard.html', {'complaints': complaints})
 
 
 # from django.shortcuts import render, redirect
