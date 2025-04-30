@@ -20,13 +20,116 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report Civic Issue</title>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            color: #333;
+        }
+        
+        h1 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+            text-align: center;
+        }
+        
+        form {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
         video, canvas {
-            width: 400px;
+            width: 100%;
+            max-width: 400px;
             height: auto;
-            border: 1px solid black;
-            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        label {
+            margin-right: 15px;
+            cursor: pointer;
+        }
+        
+        input[type="radio"] {
+            margin-right: 5px;
+        }
+        
+        input[type="text"], 
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 16px;
+            transition: background-color 0.2s;
+            display: inline-block;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        button[type="submit"] {
+            background-color: #2ecc71;
+            display: block;
+            width: 100%;
+            padding: 12px;
+            font-weight: bold;
+        }
+        
+        button[type="submit"]:hover {
+            background-color: #27ae60;
+        }
+        
+        #captureDiv, #uploadDiv {
+            margin: 15px 0;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            form {
+                padding: 15px;
+            }
+            
+            video, canvas {
+                max-width: 100%;
+            }
+            
+            button {
+                width: 100%;
+                margin-bottom: 10px;
+            }
         }
     </style>
 </head>
@@ -37,14 +140,14 @@
         {% csrf_token %}
         
         <!-- Radio buttons: Capture or Upload -->
-        <label><input type="radio" name="mode" value="capture" onclick="chooseMode('capture')"> Capture Image</label>
-        <label><input type="radio" name="mode" value="upload" onclick="chooseMode('upload')"> Upload Image</label>
-
-        <br><br>
+        <div>
+            <label><input type="radio" name="mode" value="capture" onclick="chooseMode('capture')"> Capture Image</label>
+            <label><input type="radio" name="mode" value="upload" onclick="chooseMode('upload')"> Upload Image</label>
+        </div>
 
         <!-- Webcam Preview and Capture -->
         <div id="captureDiv" style="display:none;">
-            <video id="video" autoplay></video><br>
+            <video id="video" autoplay></video>
             <button type="button" onclick="capturePhoto()">Capture Photo</button>
             <canvas id="canvas" style="display:none;"></canvas>
             <input type="hidden" name="captured_image" id="captured_image">
@@ -55,15 +158,12 @@
             <input type="file" name="image" accept="image/*">
         </div>
 
-        <br>
-
         <!-- Location -->
         <div>
-            <label for="location">Location:</label><br>
+            <label for="location">Location:</label>
             <input type="text" name="location" id="location" required>
         </div>
 
-        <br>
         <button type="submit">Submit Report</button>
     </form>
 
