@@ -30,7 +30,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-development-key-only')  # Always use environment variable in production
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
-CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://127.0.0.1:8000']
+CSRF_TRUSTED_ORIGINS = [
+    "https://your-app-name.onrender.com",  # Your Render URL
+    "http://localhost:8000",              # For local development
+    "http://127.0.0.1:8000"               # For local development
+]
 
 # Security headers (enable these in production)
 if not DEBUG:
