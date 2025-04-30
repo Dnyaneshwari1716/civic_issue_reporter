@@ -211,7 +211,7 @@ def send_email_to_authority(request):
 
         user_email = settings.EMAIL_HOST_USER
         user_name = "Dnyaneshwari Jadhawar"
-        app_password = os.getenv('EMAIL_APP_PASSWORD')
+        app_password = os.getenv('EMAIL_HOST_PASSWORD')
         receiver_email = "jadhawardnyaneshwari@gmail.com"
 
         subject = f"Complaint Regarding {issue_type.capitalize()} in {location}"
