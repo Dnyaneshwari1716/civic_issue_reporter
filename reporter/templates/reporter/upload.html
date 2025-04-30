@@ -75,17 +75,19 @@
 
         function chooseMode(mode) {
             if (mode === 'capture') {
-                document.getElementById('captureDiv').style.display = 'block';
-                document.getElementById('uploadDiv').style.display = 'none';
+               document.getElementById('captureDiv').style.display = 'block';
+               document.getElementById('uploadDiv').style.display = 'none';
 
-                // Start Webcam
-                navigator.mediaDevices.getUserMedia({ video: true })
-                    .then(stream => {
-                        video.srcObject = stream;
-                    })
-                    .catch(err => {
-                        alert('Could not access webcam');
-                    });
+               // Start Webcam (REAR CAMERA)
+                navigator.mediaDevices.getUserMedia({ 
+                  video: {
+                    facingMode: { ideal: 'environment' }  // Key change here
+                  }
+                }).then(stream => {
+                   video.srcObject = stream;
+                }).catch(err => {
+                    alert('Could not access camera. Error: ' + err.message);
+                });
 
                 // Auto Fetch Location
                 if (navigator.geolocation) {
