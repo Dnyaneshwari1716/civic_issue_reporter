@@ -1,0 +1,20 @@
+# Python
+*.pyc
+__pycache__/
+
+# Environment
+.venv/
+env/
+
+# Django
+db.sqlite3
+/staticfiles/
+media/
+
+# VSCode & OS
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Jupyter
+*.ipynb_checkpoints
